@@ -48,9 +48,14 @@ export default function TabbedAuthModal({ onClose }: { onClose: () => void }) {
   };
 
   const handleOtpSuccess = () => {
-    login();
-    onClose();
-    router.push('/membership');
+    login();      // ✅ Set login state
+    onClose();    // ✅ Close modal
+  
+    if (tab === 'signup') {
+      router.push('/auth/profile');
+    } else {
+      router.push('/membership');
+    }
   };
 
   return (
