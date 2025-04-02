@@ -3,6 +3,8 @@
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Header } from '@/components/header/header';
+import { Footer } from '@/components/footer/footer';
 
 type ProfileFormData = {
   firstName: string;
@@ -34,6 +36,8 @@ export default function ProfileSetupPage() {
   };
 
   return (
+    <>
+  <Header />
     <div className="min-h-screen bg-gray-50 px-4 py-12">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-md">
         <div className="text-center mb-8">
@@ -147,7 +151,10 @@ export default function ProfileSetupPage() {
         </form>
       </div>
     </div>
-  );
+
+    <Footer />
+        </>
+    );
 }
 
 // Tailwind utility classes

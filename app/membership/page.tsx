@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Header } from '@/components/header/header';
+import { Footer } from '@/components/footer/footer';
 
 type MembershipPlan = {
   id: number;
@@ -86,6 +88,8 @@ export default function MembershipPage() {
   const router = useRouter();
 
   return (
+    <>
+      <Header />
     <div className="min-h-screen bg-gray-100">
       <div className="border-b border-gray-200 bg-white px-6 py-4 text-sm text-gray-600">
         Home &rsaquo; My Classes &rsaquo; <strong>Membership Plans</strong>
@@ -168,5 +172,8 @@ export default function MembershipPage() {
         </div>
       </main>
     </div>
-  );
+  
+      <Footer />
+    </>
+  );  
 }
