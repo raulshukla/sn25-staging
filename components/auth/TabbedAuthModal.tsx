@@ -99,11 +99,10 @@ export default function TabbedAuthModal({ onClose }: { onClose: () => void }) {
 
       <AnimatePresence mode="wait">
         {step === 'otp' ? (
-          <OtpStep
-            expectedOtp={sentOtp}
-            onSuccess={handleOtpSuccess}
-            onBack={() => setStep('auth')}
-          />
+         <OtpStep
+         onSuccess={handleOtpSuccess}
+         onBack={() => setStep('auth')}
+       />
         ) : tab === 'login' ? (
           <motion.div
             key="login"

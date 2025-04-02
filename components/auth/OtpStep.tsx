@@ -91,16 +91,18 @@ export default function OtpStep({
       >
         {[0, 1, 2, 3].map((i) => (
           <input
-            key={i}
-            ref={(el) => (inputsRef.current[i] = el!)}
-            maxLength={1}
-            value={otp[i]}
-            onChange={(e) => handleChange(e.target.value, i)}
-            onKeyDown={(e) => handleKeyDown(e, i)}
-            className={boxStyle}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-          />
+          key={i}
+          ref={(el) => {
+            if (el) inputsRef.current[i] = el;
+          }}
+          maxLength={1}
+          value={otp[i]}
+          onChange={(e) => handleChange(e.target.value, i)}
+          onKeyDown={(e) => handleKeyDown(e, i)}
+          className={boxStyle}
+          inputMode="numeric"
+          autoComplete="one-time-code"
+        />
         ))}
       </div>
 
