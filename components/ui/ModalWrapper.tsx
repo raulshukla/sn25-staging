@@ -29,14 +29,9 @@ export default function ModalWrapper({ show, onClose, children }: ModalWrapperPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.25 }}
-            className="relative bg-white w-full max-w-md p-8 rounded-2xl shadow-xl"
+            className="relative bg-white w-full max-w-xl p-8 rounded-2xl shadow-xl"
           >
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-red-600 hover:scale-110 transition"
-            >
-              <X size={20} />
-            </button>
+           
             {children}
           </motion.div>
         </div>

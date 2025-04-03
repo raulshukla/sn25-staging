@@ -28,7 +28,7 @@ export default function EmailSignupPage() {
       <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
         <motion.div
           layout
-          className="max-w-md w-full bg-white p-8 rounded-xl shadow-xl transition-all duration-300"
+          className="max-w-xl w-full bg-white p-8 rounded-xl shadow-xl transition-all duration-300"
         >
           <h1 className="text-2xl font-bold mb-2 text-red-600 text-center">Get started for free</h1>
          

@@ -1,24 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
+import LoginModal from '@/components/auth/LoginModal';
+import SignupModal from '@/components/auth/SignupModal';
 import { useAuth } from '@/hooks/useAuth';
-import TabbedAuthModal from '@/components/auth/TabbedAuthModal';
 
 export const Header = () => {
   const router = useRouter();
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
   const { isLoggedIn, logout } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // 🔁 Listen for external trigger (e.g. Forgot Password page)
+  useEffect(() => {
+    const openSignupListener = () => setShowSignup(true);
+    document.addEventListener('openSignupModal', openSignupListener);
+    return () => {
+      document.removeEventListener('openSignupModal', openSignupListener);
+    };
+  }, []);
 
   return (
     <>
       <div className="flex flex-row w-full justify-between px-16 py-2 rounded-md border-b z-50 sticky items-center bg-white">
-        {/* Logo & Online Status */}
         <div className="flex flex-row gap-8">
           <img
             src="/assets/images/logo.png"
-            alt="SmokinNotes Logo"
+            alt=""
             className="h-8 cursor-pointer"
             onClick={() => router.push('/')}
           />
@@ -28,49 +38,64 @@ export const Header = () => {
           </div>
         </div>
 
-        {/* Navigation + Auth Buttons */}
         <div className="flex flex-row items-center gap-2">
-          <Button variant="link" onClick={() => router.push('/classes')}>Classes</Button>
-          <Button variant="link" onClick={() => router.push('/locations')}>Locations</Button>
-          <Button variant="link" onClick={() => router.push('/jobs')}>Jobs</Button>
-          <Button variant="link" onClick={() => router.push('/contact')}>Contact</Button>
-          <Button variant="link" onClick={() => router.push('/membership')}>Membership</Button>
-          <Button variant="link" onClick={() => router.push('/admin')}>Admin</Button>
+          <Button variant="link">Classes</Button>
+          <Button variant="link">Locations</Button>
+          <Button variant="link">Jobs</Button>
+          <Button variant="link">Contact</Button>
+          <Button variant="link">Membership</Button>
+          <Button variant="link">Admin</Button>
 
           {!isLoggedIn ? (
             <>
-              <Button
-                variant="secondary"
-                onClick={() => setShowAuthModal(true)}
-              >
+              <Button variant="secondary" onClick={() => setShowLogin(true)}>
                 Login
               </Button>
               <Button
+                onClick={() => setShowSignup(true)}
                 className="h-[51px] rounded-2xl px-6"
-                onClick={() => setShowAuthModal(true)}
               >
-                Create Account
+                Join for Free
               </Button>
             </>
           ) : (
             <>
-              <Button onClick={() => router.push('/auth/profile')}>
-                Profile
-              </Button>
-              <Button variant="outline" onClick={logout}>
-                Logout
-              </Button>
+              <Button onClick={() => router.push('/profile/member')}>Profile</Button>
+              <Button variant="outline" onClick={logout}>Logout</Button>
             </>
           )}
         </div>
       </div>
 
-      {/* Tabbed Auth Modal (Login + Signup) */}
-      {showAuthModal && (
-        <TabbedAuthModal onClose={() => setShowAuthModal(false)} />
+      {/* Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md relative shadow-xl">
+            <LoginModal
+              onClose={() => setShowLogin(false)}
+              openSignup={() => {
+                setShowLogin(false);
+                setShowSignup(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Signup Modal */}
+      {showSignup && (
+        <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md relative shadow-xl">
+            <SignupModal
+              onClose={() => setShowSignup(false)}
+              openLogin={() => {
+                setShowSignup(false);
+                setShowLogin(true);
+              }}
+            />
+          </div>
+        </div>
       )}
     </>
   );
 };
-
-Header.displayName = 'Header';

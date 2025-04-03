@@ -1,42 +1,61 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect} from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 type AuthContextType = {
   isLoggedIn: boolean;
+  justSignedUp: boolean;
   login: () => void;
   logout: () => void;
+  setJustSignedUp: (val: boolean) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
 
+  // Load from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem("isLoggedIn");
-    if (stored === "true") setIsLoggedIn(true);
+    const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    const signedUp = localStorage.getItem('justSignedUp') === 'true';
+    setIsLoggedIn(loggedIn);
+    setJustSignedUp(signedUp);
   }, []);
 
   const login = () => {
     setIsLoggedIn(true);
-    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem('isLoggedIn', 'true');
   };
-  
+
   const logout = () => {
     setIsLoggedIn(false);
-    localStorage.removeItem("isLoggedIn");
+    setJustSignedUp(false);
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('justSignedUp');
+  };
+
+  const handleSetJustSignedUp = (val: boolean) => {
+    setJustSignedUp(val);
+    if (val) {
+      localStorage.setItem('justSignedUp', 'true');
+    } else {
+      localStorage.removeItem('justSignedUp');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, justSignedUp, login, logout, setJustSignedUp: handleSetJustSignedUp }}
+    >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>');
-  return ctx;
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within <AuthProvider>');
+  return context;
 };
