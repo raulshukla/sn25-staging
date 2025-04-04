@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
-export default {
-  darkMode: ["class"],
+const config: Config = {
+  darkMode: "class", // ✅ fixed type-safe value
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -97,10 +97,11 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "text-slide":
-          "text-slide 12.5s cubic-bezier(0.83, 0, 0.17, 1) infinite",
+        "text-slide": "text-slide 12.5s cubic-bezier(0.83, 0, 0.17, 1) infinite",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+};
+
+export default config;
