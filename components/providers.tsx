@@ -1,7 +1,7 @@
 // app/providers.tsx
 'use client';
 
-import { AuthProvider } from '@/hooks/useAuth';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>;
