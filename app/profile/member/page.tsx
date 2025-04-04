@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/header/header';
 import { Footer } from '@/components/footer/footer';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MemberProfilePage() {
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [profileData, setProfileData] = useState<any>(null);
@@ -13,37 +15,56 @@ export default function MemberProfilePage() {
   const [coursesData, setCoursesData] = useState<any[]>([]);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setProfileData({
-        firstName: 'Ry',
-        lastName: 'Di',
-        uflEmail: 'ryan@ufl.edu',
-        contactEmail: 'ryandi@me.com',
-        phone: '3522563674',
-        major: 'Information Systems/DIS',
-        status: 'Already Graduated',
-      });
+    const loadProfile = async () => {
+      if (!user?.id) {
+        setError('User not logged in.');
+        setIsLoading(false);
+        return;
+      }
 
-      setSubscriptionData({
-        plan: {
-          name: '2 Course Plan',
-          monthlyPrice: 75,
-          maxCourses: 2,
-        },
-        status: 'Active',
-        startDate: '2025-01-15',
-        nextBillingDate: '2025-04-15',
-      });
+      try {
+        const res = await fetch(`/api/profile?userId=${user.id}`);
+        const profile = await res.json();
 
-      setCoursesData([
-        { code: 'BSC2010', name: 'Biology I' },
-        { code: 'ECO2013', name: 'Macroeconomics' },
-      ]);
+        if (!res.ok || !profile) {
+          setError('Failed to load profile.');
+        } else {
+          setProfileData({
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            uflEmail: user.email,
+            contactEmail: profile.contactEmail,
+            phone: profile.phone,
+            major: profile.major,
+            status: profile.status,
+          });
 
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+          setSubscriptionData({
+            plan: {
+              name: '2 Course Plan',
+              monthlyPrice: 75,
+              maxCourses: 2,
+            },
+            status: 'Active',
+            startDate: '2025-01-15',
+            nextBillingDate: '2025-04-15',
+          });
+
+          setCoursesData([
+            { code: 'BSC2010', name: 'Biology I' },
+            { code: 'ECO2013', name: 'Macroeconomics' },
+          ]);
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        setError('Failed to load profile.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
 
   const formatPhone = (phone: string) => {
     const match = phone.match(/^(\d{3})(\d{3})(\d{4})$/);

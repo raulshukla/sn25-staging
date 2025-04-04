@@ -5,15 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '../ui/button';
 import LoginModal from '@/components/auth/LoginModal';
 import SignupModal from '@/components/auth/SignupModal';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext'; // ✅ AuthContext usage
 
 export const Header = () => {
   const router = useRouter();
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, user } = useAuth(); // ✅ get user info
 
-  // 🔁 Listen for external trigger (e.g. Forgot Password page)
   useEffect(() => {
     const openSignupListener = () => setShowSignup(true);
     document.addEventListener('openSignupModal', openSignupListener);
@@ -21,14 +20,14 @@ export const Header = () => {
       document.removeEventListener('openSignupModal', openSignupListener);
     };
   }, []);
-
+  console.log('Auth Status →', { isLoggedIn, user });
   return (
     <>
       <div className="flex flex-row w-full justify-between px-16 py-2 rounded-md border-b z-50 sticky items-center bg-white">
         <div className="flex flex-row gap-8">
           <img
             src="/assets/images/logo.png"
-            alt=""
+            alt="Logo"
             className="h-8 cursor-pointer"
             onClick={() => router.push('/')}
           />
@@ -60,8 +59,12 @@ export const Header = () => {
             </>
           ) : (
             <>
-              <Button onClick={() => router.push('/profile/member')}>Profile</Button>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button onClick={() => router.push('/profile/member')}>
+                {user?.name || 'Profile'}
+              </Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </>
           )}
         </div>

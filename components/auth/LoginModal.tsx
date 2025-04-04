@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
+import Cookies from 'js-cookie';
+import { useAuth } from '@/contexts/AuthContext';
 
 type LoginModalProps = {
   onClose: () => void;
-  openSignup: () => void; 
+  openSignup: () => void;
 };
 
 export default function LoginModal({ onClose, openSignup }: LoginModalProps) {
   const router = useRouter();
-  const { login } = useAuth();
+  const { setUser } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -21,19 +22,42 @@ export default function LoginModal({ onClose, openSignup }: LoginModalProps) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
-    if (!username || !password) {
-      setError('Please fill in all fields.');
-      return;
-    }
+    const fullEmail = username.includes('@') ? username : `${username}@ufl.edu`;
 
-    if (username === 'login' && password === 'password') {
-      setStep('otp');
-      setError('');
-    } else {
-      setError('Incorrect username or password.');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: fullEmail, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data?.error || 'Login failed');
+        return;
+      }
+
+      // ✅ Trigger AuthContext manually using cookie
+      const userCookie = Cookies.get('user');
+      if (userCookie) {
+        try {
+          const parsed = JSON.parse(userCookie);
+          setUser(parsed);
+        } catch (err) {
+          console.error('Failed to parse user cookie:', err);
+        }
+      }
+
+      onClose();
+      router.push('/course/add');
+    } catch (err) {
+      console.error('Login failed:', err);
+      setError('Something went wrong. Please try again.');
     }
   };
 
@@ -52,7 +76,6 @@ export default function LoginModal({ onClose, openSignup }: LoginModalProps) {
   const verifyOtp = () => {
     const fullOtp = otp.join('');
     if (fullOtp === '1234') {
-      login(); // ← sets context + localStorage
       onClose();
       router.push('/course/add');
     } else {
@@ -90,9 +113,7 @@ export default function LoginModal({ onClose, openSignup }: LoginModalProps) {
       </div>
 
       <div className="p-6 space-y-4">
-        {error && (
-          <div className="bg-red-100 text-red-700 text-sm p-3 rounded">{error}</div>
-        )}
+        {error && <div className="bg-red-100 text-red-700 text-sm p-3 rounded">{error}</div>}
 
         {step === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
@@ -143,12 +164,12 @@ export default function LoginModal({ onClose, openSignup }: LoginModalProps) {
             <div className="border-t pt-4 text-center text-sm text-gray-700">
               <p className="mb-2">Don’t have an account?</p>
               <button
-  type="button"
-  onClick={openSignup}
-  className="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-50"
->
-  Sign up with UFL Email
-</button>
+                type="button"
+                onClick={openSignup}
+                className="border border-red-600 text-red-600 px-4 py-2 rounded hover:bg-red-50"
+              >
+                Sign up with UFL Email
+              </button>
             </div>
           </form>
         ) : (

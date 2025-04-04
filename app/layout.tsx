@@ -1,3 +1,5 @@
+'use client'
+
 import { Analytics } from "@vercel/analytics/react";
 import { Inter } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -6,14 +8,11 @@ import "react-perfect-scrollbar/dist/css/styles.css";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { AppProviders } from "@/components/providers"; // ✅ updated wrapper
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "Smokin'Notes",
-  description: "Educational Platform",
-  robots: "noindex, nofollow",
-};
+
 
 export default function RootLayout({
   children,
@@ -24,11 +23,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <Toaster />
-        <AppProviders>
-          <div className="min-h-screen">
+        <div className="min-h-screen">
+        <AuthProvider>
             {children}
+            </AuthProvider>
           </div>
-        </AppProviders>
+       
         {/* <SpeedInsights />
         <Analytics /> */}
       </body>

@@ -10,6 +10,7 @@ type SignupModalProps = {
 
 export default function SignupModal({ onClose, openLogin }: SignupModalProps) {
   const [email, setEmail] = useState('');
+  const [verifyUrl, setVerifyUrl] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -17,12 +18,37 @@ export default function SignupModal({ onClose, openLogin }: SignupModalProps) {
     inputRef.current?.focus();
   }, []);
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.includes('@ufl.edu')) {
-      setSubmitted(true);
+  
+    if (!email.includes('@ufl.edu')) {
+      alert('Please use your @ufl.edu email.');
+      return;
+    }
+  
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        alert(data.error || 'Signup failed.');
+        return;
+      }
+      setVerifyUrl(data.verifyUrl);
+      setSubmitted(true); // show success UI
+    } catch (err) {
+      console.error('Signup request failed:', err);
+      alert('Something went wrong. Please try again.');
     }
   };
+  
 
   return (
     <div className="w-full max-w-xl bg-white rounded-xl shadow-lg animate-fadeIn relative">
@@ -103,7 +129,7 @@ export default function SignupModal({ onClose, openLogin }: SignupModalProps) {
           ✅ To be in email:
           <br />
           <a
-            href="/auth/verify?token=xyz123"
+            href={verifyUrl}
             className="text-blue-600 underline hover:text-blue-800"
             onClick={onClose}
           >

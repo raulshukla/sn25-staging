@@ -1,48 +1,108 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/header/header';
 import { Footer } from '@/components/footer/footer';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function UpdateContactPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: 'Ry',
-    lastName: 'Di',
-    email: 'ryan@ufl.edu',
-    contactEmail: 'ryandi@me.com',
-    phone: '3525553674',
-    major: 'Engineering',
-    status: "Already Graduated"
+    firstName: '',
+    lastName: '',
+    email: '',
+    contactEmail: '',
+    phone: '',
+    major: '',
+    status: '',
   });
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // 🔄 Load profile data on mount
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user?.id) {
+        setError('User not logged in.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/profile?userId=${user.id}`);
+        const profile = await res.json();
+
+        if (!res.ok || !profile) {
+          setError('Failed to load profile.');
+          return;
+        }
+
+        setFormData({
+          firstName: profile.firstName || '',
+          lastName: profile.lastName || '',
+          email: user.email || '',
+          contactEmail: profile.contactEmail || '',
+          phone: profile.phone || '',
+          major: profile.major || '',
+          status: profile.status || '',
+        });
+      } catch (err) {
+        console.error('Failed to fetch profile:', err);
+        setError('Unable to load profile.');
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
-    if (error) setError('');
-    if (success) setSuccess('');
+    setError('');
+    setSuccess('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Simple validation
+  
     if (!formData.firstName || !formData.lastName) {
       setError('Please enter your first and last name');
       return;
     }
-
+  
     if (formData.contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail)) {
       setError('Please enter a valid email address');
       return;
     }
-
-    setSuccess('Your contact information has been updated successfully');
+  
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          contactEmail: formData.contactEmail,
+          phone: formData.phone,
+          major: formData.major,
+          status: formData.status,
+        }),
+      });
+  
+      const result = await res.json();
+  
+      if (!res.ok) {
+        throw new Error(result.error || 'Unknown error');
+      }
+  
+      setSuccess('Your contact information has been updated successfully');
+    } catch (err) {
+      console.error('Error updating contact:', err);
+      setError('Failed to update contact info');
+    }
   };
 
   return (
